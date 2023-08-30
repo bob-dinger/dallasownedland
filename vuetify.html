@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <link
+    href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css"
+    rel="stylesheet"
+    />
+  <link
+    href="https://cdn.jsdelivr.net/npm/vuetify@3.0.5/dist/vuetify.min.css"
+    rel="stylesheet"
+    />
+    <style>
+        #map{
+            background-color: grey;
+        }
+    </style>
+</head>
+  <body>
+    <div id="app"></div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.0.5/dist/vuetify.min.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@3.0.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.0.1/dist/maplibre-gl.css" rel="stylesheet" />
+
+
+    <script type="text/x-template" id="app-template">
+      <v-app>
+        <v-app-bar
+        color="primary"
+       
+      >
+      <!-- density="compact" -->
+        <template v-slot:prepend>
+          <v-app-bar-nav-icon @click="drawer=!drawer"></v-app-bar-nav-icon>
+        </template>
+
+        <v-app-bar-title>Photos</v-app-bar-title>
+
+        <template v-slot:append>
+          <v-btn icon="mdi-dots-vertical"></v-btn>
+        </template>
+      </v-app-bar>
+
+
+      <v-navigation-drawer
+      v-model="drawer"
+      location="left"
+    >
+      <v-list
+        :items="items"
+      ></v-list>
+    </v-navigation-drawer>
+
+
+    <v-main>
+        <div id="map" style="width: 100%; height: 95vh;"></div>
+    </v-main>
+
+        <!-- <v-card
+          class="mx-auto"
+          width="400"
+          append-icon="mdi-human-greeting"
+        >
+          <template v-slot:title>
+            Title
+          </template>
+          <v-card-text>
+            Description
+          </v-card-text>
+        </v-card> -->
+
+
+
+
+      </v-app>
+    </script>
+    <script>
+      const { createApp } = Vue;
+      const { createVuetify } = Vuetify;
+      
+      const vuetify = createVuetify();
+      
+      const app = createApp({
+        template: "#app-template", 
+        data() {
+            return {
+                drawer: true,
+                items: [
+                    { title: 'Home', icon: 'mdi-home' },
+                    { title: 'About', icon: 'mdi-account' },
+                    { title: 'Contact', icon: 'mdi-phone' },
+                ],
+            }
+        },
+        mounted() {
+            let map = new maplibregl.Map({
+            container: 'map',
+            style: "https://api.maptiler.com/maps/6ad3194e-bb6a-439f-994d-f67dab809e5a/style.json?key=DwcfsJ1RjlzcCtF1vt2s",
+            center: [15.6, 45.8], // starting position [lng, lat]
+            zoom: 4
+            });
+
+            let hoveredStateId = null;
+
+        map.on('load', function () {
+            map.addSource('mcl', {
+                type: 'geojson',
+                data: 'https://themapstorage.blob.core.windows.net/datastore/layers/europe_1914.geojson',
+                generateId:true
+            });
+
+            map.addLayer({
+                'id': 'mcl',
+                'type': 'fill',
+                'source': 'mcl',
+                'layout': {},
+                'paint': {
+                    'fill-color': '#088',
+                    'fill-opacity': [
+                        'case',
+                        ['boolean', ['feature-state', 'hover'], false],
+                        1,
+                        0.5
+                        ],
+                    'fill-outline-color': '#fff'
+                }
+            });
+        });
+        },
+        methods: {
+            onMapClick(e){
+                console.log(e);
+            }
+        },
+      })
+        .use(vuetify)
+        .mount("#app");
+    </script>
+  </body>
+</html>
