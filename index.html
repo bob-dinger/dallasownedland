@@ -29,7 +29,7 @@
       <v-app>
         <v-app-bar
         color="white"
-       
+        app
       >
       <!-- density="compact" -->
         <template v-slot:prepend>
@@ -45,30 +45,31 @@
 
 
       <v-navigation-drawer
+      app
       v-model="drawer"
       location="left"
       width="350"
     >
 
-
-      <v-table>
+      <p class="text-body-1" style="padding:8px;">Please click a circle to view the property's data.</p>
+      <v-table  app>
         <thead>
           <tr>
             <th class="text-left">
-              Name
+              Property
             </th>
             <th class="text-left">
-              Calories
+              Value
             </th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="item in desserts"
-            :key="item.name"
+            v-for="property in Object.keys(selectedFeature)"
+            :key="property"
           >
-            <td>{{ item.name }}</td>
-            <td>{{ item.calories }}</td>
+            <td>{{ property }}</td>
+            <td>{{ selectedFeature[property] }}</td>
           </tr>
         </tbody>
       </v-table>
@@ -103,7 +104,9 @@
                     { title: 'About', icon: 'mdi-account' },
                     { title: 'Contact', icon: 'mdi-phone' },
                 ],
-                selectedFeature:{}
+                selectedFeature:{},
+                clicked:false,
+
             }
         },
         mounted() {
@@ -117,6 +120,7 @@
             let hoveredStateId = null;
 
             map.on('load', function () {
+              
               map.addSource('dallas', {
                 type: 'geojson',
                 data: 'https://themapstorage.blob.core.windows.net/datastore/layers/Dallas_noaf.geojson'
@@ -129,20 +133,29 @@
                   'layout': {},
                   'paint': {
                       'circle-color': 'maroon',
-                      'circle-radius': 4,
+                      'circle-radius': 5,
                       'circle-stroke-width': 1,
                       'circle-stroke-color': 'white',
                       'circle-opacity': 0.8
                   }
               });
-
+            });
               
-              map.on('click', 'dallas', (e) => {
-                  new maplibregl.Popup()
-                      .setLngLat(e.lngLat)
-                      .setHTML(e.features[0].properties.name)
-                      .addTo(map);
-              });
+              map.on('click', 'dallas', function(e){
+                  // new maplibregl.Popup()
+                  //     .setLngLat(e.lngLat)
+                  //     .setHTML(e.features[0].properties.name)
+                  //     .addTo(map);
+                  //     const coordinates = e.features[0].geometry.coordinates.slice();
+                      this.selectedFeature = e.features[0].properties;
+                      this.clicked=true;
+                      console.log("clicked");
+                      console.log( this.selectedFeature);
+                      console.log(Object.keys(this.selectedFeature));
+                      console.log(this.clicked);
+ 
+              }.bind(this));
+
               map.on('mouseenter', 'dallas', () => {
                   map.getCanvas().style.cursor = 'pointer';
               });
@@ -151,7 +164,7 @@
               map.on('mouseleave', 'dallas', () => {
                   map.getCanvas().style.cursor = '';
               });
-            });
+           
         },
         methods: {
             onMapClick(e){
